@@ -13,7 +13,7 @@ import (
 )
 
 // 实例化后端MovieDao
-var movieApi =dao.MoviesAPI{}
+var movieApi =api.MoviesAPI{}
 var configer = config.Config{}
 
 func AllMovies(w http.ResponseWriter,r *http.Request){
@@ -28,7 +28,14 @@ func AllMovies(w http.ResponseWriter,r *http.Request){
 }
 
 func FindMovie(w http.ResponseWriter,r *http.Request){
-	fmt.Fprintln(w, "not implemented yet !")
+	params := mux.Vars(r)
+	movie, err :=movieApi.FindById(params["id"])
+	fmt.Printf("%s\n",movie)
+	if err != nil{
+		respondWithError(w, http.StatusBadRequest,"Invalid Movie Id ")
+		return
+	}
+	respondWithJson(w, http.StatusOK,movie)
 }
 
 func CreateMovie(w http.ResponseWriter,r *http.Request){
@@ -71,7 +78,7 @@ func main(){
 	r := mux.NewRouter()
 	r.HandleFunc("/movies",AllMovies).Methods("GET")
 	r.HandleFunc("/movies/new",CreateMovie).Methods("POST")
-	r.HandleFunc("movies/{id}",FindMovie).Methods("GET")
+	r.HandleFunc("/movies/{id}",FindMovie).Methods("GET")
 	if err:=http.ListenAndServe(":8888",r); err!=nil{
 		log.Fatal(err)
 	}

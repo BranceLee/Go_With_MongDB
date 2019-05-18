@@ -56,6 +56,10 @@ func (m *MoviesAPI) Create(movie models.Movies) error{
 	return err
 }
 
-
+func (m *MoviesAPI) FindById(id string) (models.Movies, error){
+	var movie models.Movies
+	err :=db.C(COLLECTION).FindId(bson.ObjectIdHex(id)).One(&movie)
+	return movie, err
+}
 
 
