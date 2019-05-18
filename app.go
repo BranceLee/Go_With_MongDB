@@ -8,16 +8,23 @@ import (
 	"gopkg.in/mgo.v2/bson"
 	"github.com/gorilla/mux"
 	"github.com/Plee/Mongolang/models"
-	"github.com/Plee/Mongolang/dao"
+	"github.com/Plee/Mongolang/api"
 	"github.com/Plee/Mongolang/config"
 )
 
 // 实例化后端MovieDao
-var movieDao =dao.MoviesDAO{}
+var movieApi =dao.MoviesAPI{}
 var configer = config.Config{}
 
 func AllMovies(w http.ResponseWriter,r *http.Request){
-	fmt.Fprintln(w, "not implemented yet !")
+	// fmt.Fprintln(w, "not implemented yet !")
+	defer r.Body.Close()
+	movies, err:=movieApi.FindAll()
+	if err !=nil {
+		respondWithError(w, http.StatusBadRequest, "Can not find the data")
+		return
+	}
+	respondWithJson(w, http.StatusOK,movies)
 }
 
 func FindMovie(w http.ResponseWriter,r *http.Request){
@@ -33,7 +40,7 @@ func CreateMovie(w http.ResponseWriter,r *http.Request){
 		respondWithError(w, http.StatusBadRequest,"Invalid request payload")
 	}
 	movie.ID = bson.NewObjectId()
-	if err := movieDao.Create(movie); err !=nil{
+	if err := movieApi.Create(movie); err !=nil{
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -55,9 +62,9 @@ func respondWithJson(w http.ResponseWriter, code int, payload interface{}){
 func init(){
 	configer.Read()
 
-	movieDao.Server = configer.Server
-	movieDao.Database = configer.Database
-	movieDao.Connect()
+	movieApi.Server = configer.Server
+	movieApi.Database = configer.Database
+	movieApi.Connect()
 }
 
 func main(){
