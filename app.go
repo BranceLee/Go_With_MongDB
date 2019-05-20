@@ -20,6 +20,7 @@ func AllMovies(w http.ResponseWriter,r *http.Request){
 	// fmt.Fprintln(w, "not implemented yet !")
 	defer r.Body.Close()
 	movies, err:=movieApi.FindAll()
+	fmt.Printf("%s\n",movies)
 	if err !=nil {
 		respondWithError(w, http.StatusBadRequest, "Can not find the data")
 		return
@@ -54,6 +55,20 @@ func CreateMovie(w http.ResponseWriter,r *http.Request){
 	respondWithJson(w, http.StatusCreated, movie)
 }
 
+func DeleteMovies(w http.ResponseWriter, r *http.Request){
+	defer r.Body.Close()
+	var movie models.Movies
+	if err := json.NewDecoder(r.Body).Decode(&movie); err != nil{
+		respondWithError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	if err := movieApi.Delete(movie); err !=nil {
+		respondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	respondWithJson(w, http.StatusOK, map[string]string{"result":"success"} )
+}
+
 func respondWithError(w http.ResponseWriter,code int, msg string){
 	respondWithJson(w,code,map[string]string{"error":msg})
 }
@@ -79,6 +94,7 @@ func main(){
 	r.HandleFunc("/movies",AllMovies).Methods("GET")
 	r.HandleFunc("/movies/new",CreateMovie).Methods("POST")
 	r.HandleFunc("/movies/{id}",FindMovie).Methods("GET")
+	r.HandleFunc("/movies",DeleteMovies).Methods("DELETE")
 	if err:=http.ListenAndServe(":8888",r); err!=nil{
 		log.Fatal(err)
 	}

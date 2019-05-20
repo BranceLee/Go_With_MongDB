@@ -62,4 +62,7 @@ func (m *MoviesAPI) FindById(id string) (models.Movies, error){
 	return movie, err
 }
 
-
+func (m *MoviesAPI) Delete(movie models.Movies) error{
+	err := db.C(COLLECTION).Remove(&movie)
+	return err
+}
